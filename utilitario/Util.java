@@ -9,6 +9,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 public class Util {
 	static SimpleDateFormat data_formato = new SimpleDateFormat("dd/MM/yyyy");
@@ -39,5 +40,12 @@ public class Util {
 	}
 	public static String LocalDateParaString(LocalDate d) {
 		return d.format(data_formato_localDate);
+	}
+	public static void Pausar (int segundos) {
+		try {
+			TimeUnit.SECONDS.sleep(segundos);
+		}catch (InterruptedException e) {
+			System.out.println("Não foi possível pausar por " + segundos);
+		}
 	}
 }
