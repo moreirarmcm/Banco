@@ -9,12 +9,12 @@ public class Cliente {
 	private static int contador = 1;
 	private int codigo;
 	private String nome, email, cpf;
-	private Date data_nascimento; 
+	private LocalDate data_nascimento; 
 	private LocalDate data_cadastro;
 		
 
 
-	public Cliente(String nome, String email, String cpf, Date data_nascimento) {
+	public Cliente(String nome, String email, String cpf, LocalDate data_nascimento) {
 		super();
 		this.codigo = contador;
 		contador++;
@@ -58,11 +58,11 @@ public class Cliente {
 		this.cpf = cpf;
 	}
 
-	public Date getData_nascimento() {
+	public LocalDate getData_nascimento() {
 		return data_nascimento;
 	}
 
-	public void setData_nascimento(Date data_nascimento) {
+	public void setData_nascimento(LocalDate data_nascimento) {
 		this.data_nascimento = data_nascimento;
 	}
 	public LocalDate getDataCadastro() {

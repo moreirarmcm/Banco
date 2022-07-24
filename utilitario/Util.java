@@ -16,7 +16,7 @@ public class Util {
 	static NumberFormat dinheiro_formato = new DecimalFormat("R$ #,##0.00", new DecimalFormatSymbols(new Locale("pt", "BR")) ); 
 	static DateTimeFormatter data_formato_localDate = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 	
-	public static String DateParaString(Date d) {
+	public static String DateParaString(LocalDate d) {
 		return Util.data_formato.format(d);
 	}
 	public static Date StringParaDate(String s) {
