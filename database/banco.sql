@@ -18,5 +18,21 @@ CREATE TABLE conta(
 	limite FLOAT(11,2)
 );
 
+ALTER TABLE cliente 
+	MODIFY cpf CHAR(14);
+
+ALTER TABLE cliente
+	MODIFY data_nascimento VARCHAR(11);
 	
+ALTER TABLE cliente
+	MODIFY data_cadastro VARCHAR(11);
 	
+/*INSERT INTO cliente (nome, email, cpf, data_nascimento, data_cadastro) VALUES ("Renan", "moreirarmcm@gmail.com", "123.456.789-21", "1996-10-09", "2022-07-29");*/
+	
+SELECT* FROM CLIENTE;
+
+ALTER TABLE conta
+	MODIFY id INT(5);
+
+ALTER TABLE conta
+	ADD saldo_total FLOAT(11,2);
