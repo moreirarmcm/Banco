@@ -1,116 +1,63 @@
 package model;
 
-import utilitario.Util;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import util.Util;
+import view.Banco;
 
 public class Conta {
-	private static int codigo = 1001;
+	private int codigo;
 	
-	private int numero;
-	private Cliente cliente;
+	private int codigo_conta;
+	//private Cliente cliente;
 	private double saldo, limite, saldo_total = 0.0;
-	
-	
-	public Conta(Cliente cliente) {
-		super();
-		this.numero = codigo;
-		codigo++;
-		this.cliente = cliente;
-		this.saldo = getSaldo();
-		this.limite = getLimite();
-		this.atualizaSaldoTotal();
-	}
-	private void atualizaSaldoTotal() {
-		this.saldo_total = this.getSaldo() + this.getLimite();
-	}
-		
-	@Override
-	public String toString() {
-		return "conta: " + this.getNumero() + 
-				"\ncliente: " + this.getCliente().getNome() + 
-				"\nsaldo: " + Util.doubleParaDinheiro(this.getSaldo()) + 
-				"\nlimite: " + Util.doubleParaDinheiro(this.getLimite()) +
-				"\nsaldo total: " + this.getSaldo_total();
-	}
-	public void depositar (Double valor){
-		if (valor > 0) {
-			this.saldo = this.getSaldo() + valor;
-			this.atualizaSaldoTotal();
-			System.out.println("Depósito efetuado com sucesso.");
-		}else {
-			System.out.println("Erro ao efeturar o depósito.");
-		}
-	}
-	public void sacar(Double valor) {
-		if (valor > 0 && valor <= this.getSaldo_total()) {
-			if (this.getSaldo()>= valor) {
-				this.setSaldo(this.getSaldo() - valor);
-				this.atualizaSaldoTotal();
-			}else {
-				valor = valor - this.getSaldo();
-				this.setLimite(this.getLimite() - valor);
-				this.setSaldo(0.0);
-				this.atualizaSaldoTotal();
-			}
-			System.out.println("Saque efetuado com sucesso.");
-		}else {
-			System.out.println("Erro ao realizar o saque.");
-		}
-	}
-	public void transferir (Conta destino, double valor) {
-		if (valor > 0 && valor <= this.getSaldo_total()) {
-			if (this.getSaldo() > valor) {
-				this.setSaldo(this.getSaldo() - valor);
-				destino.setSaldo(destino.getSaldo() + valor);
-				this.atualizaSaldoTotal();
-				destino.atualizaSaldoTotal();
-			}else {
-				valor = this.getSaldo() - valor;
-				this.setLimite(this.getLimite() - valor);
-				this.setSaldo(0);
-				destino.setSaldo(destino.getSaldo() );
-			}
-			System.out.println("Transferência realizada.");
+	private Connection conexao;
 
-		}else {
-			System.out.println("Transferência não realizada.");
+	public void CriandoConta(int id_cliente) {
+		conexao = Banco.Conectando();
+		String cria_conta = "INSERT INTO conta (id, id_cliente, saldo, limite, saldo_total) VALUES (?,?,?,?,?)";
+		String verifica_cliente = "SELECT* FROM cliente WHERE id = " + id_cliente;
+		String id_ultima_conta = "SELECT max(id) FROM conta";
+		try {
+			ResultSet cliente = conexao.createStatement().executeQuery(verifica_cliente);
+			ResultSet id_conta = conexao.createStatement().executeQuery(id_ultima_conta);
+			PreparedStatement criando_conta = conexao.prepareStatement(cria_conta);
+			if (cliente.next()) {
+				codigo = cliente.getInt(1);
+			}
+			if (id_conta.next()) {
+				int x = id_conta.getInt(1);
+				if (x == 0) {
+					codigo_conta = 1001;
+				}else {
+					codigo_conta = x + 1;
+				}
+			}
+			criando_conta.setInt(1, codigo_conta);
+			criando_conta.setInt(2, codigo);
+			criando_conta.setFloat(3, 0.0f);
+			criando_conta.setFloat(4, 0.0f);
+			criando_conta.setFloat(5, 0.0f); //Para o saldo total. Revise
+			criando_conta.execute();
+			System.out.println("\nConta criada.");
+			verifica_cliente = "SELECT* FROM cliente WHERE id = " + codigo;
+			cliente = conexao.createStatement().executeQuery(verifica_cliente);
+			if (cliente.next()) {
+				System.out.println("Dados da conta:"
+						+ "\n    nÂ° identificador: " + codigo_conta 
+						+ "\n    Titular: " + cliente.getString("nome")
+						+ "\n    Saldo: " + Util.doubleParaDinheiro(0.0)
+						+ "\n    Limite: " + Util.doubleParaDinheiro(0.0));
+			}
+			Util.Pausar(2);
+			Banco.menu();
+		} catch (SQLException e) {
+			System.out.println("Cliente nÃ£o encontrado.");
+			Util.Pausar(3);
+			Banco.menu();
 		}
-	}
-	
-	public static int getCodigo() {
-		return codigo;
-	}
-	public static void setCodigo(int codigo) {
-		Conta.codigo = codigo;
-	}
-	public int getNumero() {
-		return numero;
-	}
-	public void setNumero(int numero) {
-		this.numero = numero;
-	}
-	public Cliente getCliente() {
-		return cliente;
-	}
-	public void setCliente(Cliente cliente) {
-		this.cliente = cliente;
-	}
-	public double getSaldo() {
-		return saldo;
-	}
-	public void setSaldo(double saldo) {
-		this.saldo = saldo;
-	}
-	public double getLimite() {
-		return limite;
-	}
-	public void setLimite(double limite) {
-		this.limite = limite;
-		this.atualizaSaldoTotal();
-	}
-	public double getSaldo_total() {
-		return saldo_total;
-	}
-	public void setSaldo_total(double saldo_total) {
-		this.saldo_total = saldo_total;
 	}
 }
