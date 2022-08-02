@@ -15,14 +15,53 @@ import util.Util;
 import view.Banco;
 
 public class Cliente {
-	private static int contador = 1;
-	private static int codigo; // código do ultimo cliente;
-	private String nome, email, cpf;
-	private LocalDate data_nascimento; 
-	private LocalDate data_cadastro;
 	private Scanner sc = new Scanner(System.in);
 	private Connection conexao;
+	private Conta conta = new Conta();
 	
+	/**
+	 * Método que cria conta. Caso o cliente ainda não possua cadastro, cria um registro na tabela 'cliente' com os dados
+	 * do usuário. Após verificação do cliente (já existen ou criado), cria uma nova conta.
+	 */ 
+	public void gerenciandoCliente() {
+		System.out.println("O titular da conta já possui cadastro? \n  1 - para 'SIM'.\n  0 - para 'NÃO'.");
+		int opcao; 
+		int codigo_cliente = 0; // receberá o id do cliente criado;
+		try {
+			opcao = Integer.parseInt(sc.nextLine()); // 1 ou 0;
+			if (opcao == 0) { // será necessário criar um cliente para ser titular da conta;
+				System.out.println("Iniciando a criação de um novo cliente.\nAguarde...");
+				Util.Pausar(3);
+				codigo_cliente = criandoCliente();
+			}else if (opcao == 1) { // apenas o número de identificação do cliente;
+				System.out.println("Qual o código de identificação do cliente:");
+				try {
+					codigo_cliente = Integer.parseInt(sc.nextLine());
+				}catch (NumberFormatException e) {
+					System.out.println("Valor informado como identificação de cliente não é um número.\nReinicie o atendimento.");
+					Util.Pausar(3);
+					gerenciandoCliente();
+				}
+			}
+			if (codigo_cliente != 0) { //Caso exista um cliente
+				System.out.println("Iniciando a criação de uma nova conta.\nAguarde...");
+				Util.Pausar(3);
+				conta.CriandoConta(codigo_cliente);
+			}
+		}catch (NumberFormatException e) {
+				System.out.println("Informação não compreendida. \nInforme se o cliente possui cadastro (apenas valores numéricos.");
+				Util.Pausar(3);
+				gerenciandoCliente();
+		}
+	}
+	
+	/**
+	 * Método que cria um novo cliente.
+	 * 
+	 * Faz conexão com o banco de dados e insere os dados do novo cliente, então retorna o n° de identificação do cliente criado (int). 
+	 * 
+	 * @return id_cliente = chave primária da tabela 'cliente'.
+	 */
 	public int criandoCliente() {
 		conexao = Banco.Conectando();
 		int id_cliente = 0;
@@ -38,7 +77,6 @@ public class Cliente {
 		String insere_cliente = "INSERT INTO cliente (nome, email, cpf, data_nascimento, data_cadastro) VALUES (?,?,?,?,?)";
 		
 		PreparedStatement inserindo;
-		//System.out.println("Entrando no Try...");
 		Util.Pausar(2);
 		try{
 			inserindo = conexao.prepareStatement(insere_cliente);
@@ -55,6 +93,8 @@ public class Cliente {
 					recupera_ultimo_cliente = "SELECT* FROM cliente WHERE id = " + id_cliente;
 					recuperando_ultimo_cliente = conexao.createStatement().executeQuery(recupera_ultimo_cliente);
 					if( recuperando_ultimo_cliente.next()) {
+						System.out.println("Cadastrando cliente.\nAguarde...\n");
+						Util.Pausar(2);
 						System.out.println("Usuário criado!"
 								+ "\n    N° identificação: " + recuperando_ultimo_cliente.getInt("id")
 								+ "\n    Nome do Titular: " + recuperando_ultimo_cliente.getString("nome")
@@ -69,6 +109,7 @@ public class Cliente {
 		}catch (Exception e) {
 			System.out.println("Deu alguma pane");
 		}
+		Util.Pausar(3);
 		return id_cliente;
 	}
 }
