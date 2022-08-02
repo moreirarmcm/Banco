@@ -1,80 +1,74 @@
 package model;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Date;
+import java.util.Scanner;
 
-import utilitario.Util;
+import com.mysql.cj.xdevapi.PreparableStatement;
+
+import util.Util;
+import view.Banco;
 
 public class Cliente {
 	private static int contador = 1;
-	private int codigo;
+	private static int codigo; // código do ultimo cliente;
 	private String nome, email, cpf;
 	private LocalDate data_nascimento; 
 	private LocalDate data_cadastro;
-		
-
-
-	public Cliente(String nome, String email, String cpf, LocalDate data_nascimento) {
-		super();
-		this.codigo = contador;
-		contador++;
-		this.nome = nome;
-		this.email = email;
-		this.cpf = cpf;
-		this.data_nascimento = data_nascimento;
-	//	this.data_cadastro  = Date.parse(LocalDate.now());
-		data_cadastro = LocalDate.now();
-	}
-
-	public static int getContador() {
-		return contador;
-	}
-
-	public int getCodigo() {
-		return codigo;
-	}
-
-	public String getNome() {
-		return nome;
-	}
-
-	public void setNome(String nome) {
-		this.nome = nome;
-	}
-
-	public String getEmail() {
-		return email;
-	}
-
-	public void setEmail(String email) {
-		this.email = email;
-	}
-
-	public String getCpf() {
-		return cpf;
-	}
-
-	public void setCpf(String cpf) {
-		this.cpf = cpf;
-	}
-
-	public LocalDate getData_nascimento() {
-		return data_nascimento;
-	}
-
-	public void setData_nascimento(LocalDate data_nascimento) {
-		this.data_nascimento = data_nascimento;
-	}
-	public LocalDate getDataCadastro() {
-		return this.data_cadastro;
-	}
+	private Scanner sc = new Scanner(System.in);
+	private Connection conexao;
 	
-	public String toString() {
-		return "nome: " + this.getNome() +
-				"\nemail: " + this.getEmail() +
-				"\nCPF: " + this.getCpf() +
-				"\nData de Nascimento: " + Util.DateParaString(this.getData_nascimento()) +
-				"\nData de Cadastro: " + Util.LocalDateParaString(data_cadastro);
+	public int criandoCliente() {
+		conexao = Banco.Conectando();
+		int id_cliente = 0;
+		String recupera_ultimo_cliente = "SELECT max(id) FROM cliente";
+		System.out.print("Digite o nome do cliente: ");
+		String nome = sc.nextLine();
+		System.out.print("\nDigite o email do cliente: ");
+		String email = sc.nextLine();
+		System.out.print("\nDigite o CPF do cliente: ");
+		String cpf = sc.nextLine();
+		System.out.println("\nDigite a data de nascimento do cliente:\nDigite os números separados por '/'");
+		String dt_nascimento = sc.nextLine();
+		String insere_cliente = "INSERT INTO cliente (nome, email, cpf, data_nascimento, data_cadastro) VALUES (?,?,?,?,?)";
+		
+		PreparedStatement inserindo;
+		//System.out.println("Entrando no Try...");
+		Util.Pausar(2);
+		try{
+			inserindo = conexao.prepareStatement(insere_cliente);
+			inserindo.setString(1, nome);
+			inserindo.setString(2, email);
+			inserindo.setString(3, cpf);
+			inserindo.setString(4, dt_nascimento);
+			inserindo.setString(5, Util.DataAtual());
+			inserindo.execute();
+			try {	
+				ResultSet recuperando_ultimo_cliente = conexao.createStatement().executeQuery(recupera_ultimo_cliente);
+				if (recuperando_ultimo_cliente.next()) {
+					id_cliente = recuperando_ultimo_cliente.getInt(1);
+					recupera_ultimo_cliente = "SELECT* FROM cliente WHERE id = " + id_cliente;
+					recuperando_ultimo_cliente = conexao.createStatement().executeQuery(recupera_ultimo_cliente);
+					if( recuperando_ultimo_cliente.next()) {
+						System.out.println("Usuário criado!"
+								+ "\n    N° identificação: " + recuperando_ultimo_cliente.getInt("id")
+								+ "\n    Nome do Titular: " + recuperando_ultimo_cliente.getString("nome")
+								+ "\n    Data de criação da conta: " + recuperando_ultimo_cliente.getString("data_cadastro"));
+					}
+				}
+			}catch (SQLException e) {
+				System.out.println("Não foi possível criar cliente.\nRevise os dados informados.");
+				Util.Pausar(3);
+				Banco.menu();
+			}
+		}catch (Exception e) {
+			System.out.println("Deu alguma pane");
+		}
+		return id_cliente;
 	}
-
 }
